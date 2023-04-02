@@ -1,0 +1,23 @@
+.navbar{
+    border-radius: 10px;
+}
+
+.card{
+    display: inline-block;
+    text-align: center;
+    margin-left: 40px;
+    margin-top: 40px;
+}
+
+#scrollUp{
+    position: fixed;
+    bottom : 30px;
+    margin-right: 20px;
+}
+
+body{background-color: 	#FF8C00;}
+header{
+	background-image:url("logo-haribo") ;
+	background-size: cover; 
+	background-position: center ;
+}
