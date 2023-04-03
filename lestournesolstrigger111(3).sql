@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : sam. 01 avr. 2023 à 15:24
+-- Généré le : lun. 03 avr. 2023 à 20:36
 -- Version du serveur : 5.7.36
 -- Version de PHP : 7.4.26
 
@@ -21,10 +21,6 @@ SET time_zone = "+00:00";
 -- Base de données : `lestournesolstrigger111`
 --
 
-CREATE DATABASE lestournesolstrigger111;
-
-use lestournesolstrigger111;
-
 -- --------------------------------------------------------
 
 --
@@ -34,7 +30,7 @@ use lestournesolstrigger111;
 DROP TABLE IF EXISTS `approvisionner`;
 CREATE TABLE IF NOT EXISTS `approvisionner` (
   `ReferenceProduit` char(6) COLLATE utf8_bin NOT NULL,
-  `DateApprovisionnement` date NOT NULL,
+  `DateApprovisionnement` datetime NOT NULL,
   `QtAppro` int(11) DEFAULT NULL,
   PRIMARY KEY (`ReferenceProduit`,`DateApprovisionnement`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -119,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `vegetauxachetes` (
 --
 
 INSERT INTO `vegetauxachetes` (`ReferenceProduit`, `QuantiteEnStockMax`, `QuantiteEnStock`, `StockSecurite`, `PrixAchat`, `NumeroFournisseur`) VALUES
-('ASP001', 150, 140, 30, 6.53, 1),
+('ASP001', 150, 1, 30, 6.53, 1),
 ('CDN001', 110, 90, 20, 6.43, 1),
 ('CDP001', 90, 60, 30, 5.99, 1),
 ('FDB001', 90, 50, 20, 5.83, 1),
@@ -165,6 +161,35 @@ CREATE TABLE IF NOT EXISTS `vendre` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
+-- Déchargement des données de la table `vendre`
+--
+
+INSERT INTO `vendre` (`ReferenceProduit`, `DateVente`, `Quantitevendue`) VALUES
+('ASP001', '2023-04-03 20:17:22', 1),
+('ASP001', '2023-04-03 22:34:54', 138);
+
+--
+-- Déclencheurs `vendre`
+--
+DROP TRIGGER IF EXISTS `MAJProduit`;
+DELIMITER $$
+CREATE TRIGGER `MAJProduit` AFTER INSERT ON `vendre` FOR EACH ROW BEGIN
+
+DECLARE qteStock int ;
+DECLARE qteStockMax int;
+DECLARE StockSecurite int;
+DECLARE qteAppro int;
+update vegetauxachetes set QuantiteEnStock=QuantiteEnStock - New.Quantitevendue WHERE ReferenceProduit= new.ReferenceProduit;
+SELECT QuantiteEnStockMax,QuantiteEnStock,StockSecurite INTO qteStockMax, qteStock, StockSecurite from vegetauxachetes where ReferenceProduit= new.ReferenceProduit;
+IF qteStock <= StockSecurite THEN 
+SET qteAppro = qteStockMax - qteStock;
+INSERT INTO approvisionner (QtAppro, DateApprovisionnement, ReferenceProduit) VALUES (qteAppro,NOW(), NEW.ReferenceProduit);
+END IF;
+END
+$$
+DELIMITER ;
+
+--
 -- Contraintes pour les tables déchargées
 --
 
@@ -197,22 +222,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-
-
-DELIMITER $$
-CREATE TRIGGER MAJProduit AFTER INSERT ON vendre FOR EACH ROW BEGIN
-
-DECLARE qteStock int ;
-DECLARE qteStockMax int;
-DECLARE StockSecurite int;
-DECLARE qteAppro int;
-update vegetauxachetes set QuantiteEnStock=QuantiteEnStock - New.Quantitevendue WHERE ReferenceProduit= new.ReferenceProduit;
-SELECT QuantiteEnStockMax,QuantiteEnStock,StockSecurite INTO qteStock, qteStockMax, StockSecurite from vegetauxachetes where ReferenceProduit= new.ReferenceProduit;
-IF qteStock <= StockSecurite THEN 
-SET qteAppro = qteStockMax - qteStock;
-INSERT INTO approvisionner (QtAppro, DateApprovisionnement, ReferenceProduit) VALUES (qteAppro,NOW(), NEW.ReferenceProduit);
-END IF;
-END
-$$
-DELIMITER ;
