@@ -49,12 +49,14 @@
 		if (mysqli_num_rows($result) > 0) {
 			$row = mysqli_fetch_assoc($result);
 			$stock = $row["QuantiteEnStock"];
+			$date = new DateTime();
+			$date_formatted = $date->format('Y-m-d H:i:s');
 
 			if ($qte > $stock) {
 				echo "<h1>La quantité demandée n'est pas disponible en stock.</h1>";
 			} else {
 				$nouveau_stock = $stock - $qte;
-				$sql = "INSERT INTO vendre VALUES ('$ref',date('YYYY-mm-dd'),'$nouveau_stock')";
+				$sql = "INSERT INTO vendre VALUES ('$ref','$date_formatted','$nouveau_stock')";
 				if (mysqli_query($conn, $sql)) {
 					echo "<h1>Vos végétaux ont bien été vendus.</h1>";
 				} else {
