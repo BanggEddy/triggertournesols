@@ -51,7 +51,7 @@
             while ($row = mysqli_fetch_assoc($result)) {
                 echo "<h4 class='card-text'>" . $row["ReferenceProduit"] . "</h4><P class='card-title'>" . $row["DesignationProduit"] . "</P><P class='card-title'>" . $row["QuantiteEnStock"] . "</P><td style='
                 padding: 20px;'>";
-                echo "</td><td><form method='post' action='acheter.php'><input type='hidden' name='ref' value='" . $row["ReferenceProduit"] . "'><input type='number' name='quantite' min='1' max='" . $row["QuantiteEnStock"] . "' required><input type='submit' class='btn btn-warning' value='Acheter'></form> -----------------------------";
+                echo "</td><td><form method='post' action='vendre.php'><input type='hidden' name='ref' value='" . $row["ReferenceProduit"] . "'><input type='number' name='quantite' min='1' max='" . $row["QuantiteEnStock"] . "' required><input type='submit' class='btn btn-warning' value='Acheter'></form> -----------------------------";
             }
         } else {
             echo "<tr><td colspan='5'>Aucun résultat</td></tr>";
