@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `lestournesolstrigger1`
+-- Base de données : `lestournesolstrigger111`
 --
 
-CREATE DATABASE lestournesolstrigger1;
+CREATE DATABASE lestournesolstrigger111;
 
-use lestournesolstrigger1;
+use lestournesolstrigger111;
 
 -- --------------------------------------------------------
 
@@ -200,32 +200,19 @@ COMMIT;
 
 
 
-DELIMITER //
-CREATE TRIGGER gestionStock
-AFTER UPDATE ON vegetauxachetes
-FOR EACH ROW
-BEGIN
-    DECLARE QuantiteSeuil INT;
-    DECLARE QuantiteManquante INT;
-    DECLARE ref_count INT;
-    
-    SELECT StockSecurite INTO QuantiteSeuil FROM vegetauxachetes WHERE ReferenceProduit = NEW.ReferenceProduit;
-    SET QuantiteManquante = NEW.QuantiteEnStockMax - NEW.QuantiteEnStock;
-    
-    SELECT COUNT(*) INTO ref_count FROM approvisionner WHERE ReferenceProduit = NEW.ReferenceProduit;
-    
-    IF NEW.QuantiteEnStock < QuantiteSeuil THEN
-        IF QuantiteManquante > 0 THEN
-            IF ref_count > 0 THEN
-                UPDATE approvisionner SET QtAppro = QuantiteManquante, DateApprovisionnement = SYSDATE() WHERE ReferenceProduit = NEW.ReferenceProduit;
-            ELSE
-                INSERT INTO approvisionner (ReferenceProduit, DateApprovisionnement, QtAppro)
-                VALUES (NEW.ReferenceProduit, SYSDATE(), QuantiteManquante);
-            END IF;
-        END IF;
-    END IF;
-    
-    INSERT INTO vendre (ReferenceProduit, DateVente, Quantitevendue)
-    VALUES (NEW.ReferenceProduit, SYSDATE(), OLD.QuantiteEnStock - NEW.QuantiteEnStock);
-END//
+DELIMITER $$
+CREATE TRIGGER MAJProduit AFTER INSERT ON vendre FOR EACH ROW BEGIN
+
+DECLARE qteStock int ;
+DECLARE qteStockMax int;
+DECLARE StockSecurite int;
+DECLARE qteAppro int;
+update vegetauxachetes set QuantiteEnStock=QuantiteEnStock - New.Quantitevendue WHERE ReferenceProduit= new.ReferenceProduit;
+SELECT QuantiteEnStockMax,QuantiteEnStock,StockSecurite INTO qteStock, qteStockMax, StockSecurite from vegetauxachetes where ReferenceProduit= new.ReferenceProduit;
+IF qteStock <= StockSecurite THEN 
+SET qteAppro = qteStockMax - qteStock;
+INSERT INTO approvisionner (QtAppro, DateApprovisionnement, ReferenceProduit) VALUES (qteAppro,NOW(), NEW.ReferenceProduit);
+END IF;
+END
+$$
 DELIMITER ;

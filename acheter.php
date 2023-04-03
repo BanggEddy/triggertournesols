@@ -37,7 +37,7 @@
 		$ref = $_POST['ref'];
 		$qte = $_POST['quantite'];
 
-		$conn = mysqli_connect("localhost", "root", "", "lestournesolstrigger1");
+		$conn = mysqli_connect("localhost", "root", "", "lestournesolstrigger111");
 
 		if (!$conn) {
 			die("Connexion échouée: " . mysqli_connect_error());
@@ -54,7 +54,7 @@
 				echo "<h1>La quantité demandée n'est pas disponible en stock.</h1>";
 			} else {
 				$nouveau_stock = $stock - $qte;
-				$sql = "UPDATE vegetauxachetes SET QuantiteEnStock='$nouveau_stock' WHERE ReferenceProduit='$ref'";
+				$sql = "INSERT INTO vendre VALUES ('$ref',date('YYYY-mm-dd'),'$nouveau_stock')";
 				if (mysqli_query($conn, $sql)) {
 					echo "<h1>Vos végétaux ont bien été vendus.</h1>";
 				} else {
